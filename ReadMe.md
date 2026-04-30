@@ -15,25 +15,37 @@
 ## 数据流
 
 ```
-[相机/视频]
-     │
-     ▼
-armor_plate_identification  ──→  /armor_plates  ──┬──→  armor_plate_tracker
-(识别 + PnP + 数字识别)                             │      (世界坐标系KF + 时间对齐)
-                                                   │
-                                                   │←──  /gimbal_angle  ←──  [电控回传]
-                                                   │         ↑
-                                                   │    armor_plate_serial
-                                                   │
-                                                   ├──→  /aim_command  ──→  armor_plate_serial  ──→  [电控]
-                                                   │
-                                                   ├──→  /tracker_debug  ──→  data_visualization_node
-                                                   │
-                                                   ├──→  /tracker_data
-                                                   │
-                                                   ├──→  /filter_pose, /measured_pose  ──→  RViz
-                                                   │
-                                                   └──→  TF (camera_link, armor_plate_N)
+                              [相机/视频]
+                                   │
+                                   ▼
+                    ┌──────────────────────────────┐
+                    │  armor_plate_identification  │
+                    │    (识别 + PnP + 数字识别)    │
+                    └──────────────────────────────┘
+                                   │
+                                   │ ArmorPlates
+                                   ▼
+                    ┌──────────────────────────────┐
+                    │     armor_plate_tracker      │
+                    │   (世界坐标系KF + 时间对齐)   │
+                    │                              │
+                    │  订阅 /gimbal_angle ←─────────┼──── [电控回传]
+                    │       (GimbalAngle)           │      │
+                    └──────────────────────────────┘      │
+                                   │                      │
+              ┌────────────────────┼────────────────────┐  │
+              │                    │                    │  │
+              ▼                    ▼                    ▼  │
+   ┌─────────────────┐  ┌─────────────────────┐  ┌────────┴─────────┐
+   │  armor_plate_   │  │ data_visualization_ │  │      RViz        │
+   │     serial      │  │       node          │  │                  │
+   │  (串口发送)      │  │  (OpenCV 窗口)      │  │  /filter_pose    │
+   │                 │  │                     │  │  /measured_pose  │
+   │ AimCommand      │  │   TrackerDebug      │  │  Marker / TF     │
+   └─────────────────┘  └─────────────────────┘  └──────────────────┘
+              │
+              ▼
+           [电控]
 ```
 
 **消息说明**

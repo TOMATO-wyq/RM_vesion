@@ -82,7 +82,7 @@ void Tracker::selectBestMatch(const std::vector<ArmorPlate>& armor_plates, Armor
     double yaw = state[7];
     Eigen::Vector3d pred_pos(
         state[0] + r * std::sin(yaw),
-        state[1] + r * std::cos(yaw),
+        state[1] - r * std::cos(yaw),
         state[2]
     );
     float min_dist = std::numeric_limits<float>::max();
