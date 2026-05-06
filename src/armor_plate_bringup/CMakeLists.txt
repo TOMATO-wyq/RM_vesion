@@ -7,7 +7,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 
-install(DIRECTORY launch rviz2
+install(DIRECTORY launch FoxGlove
   DESTINATION share/${PROJECT_NAME}
 )
 

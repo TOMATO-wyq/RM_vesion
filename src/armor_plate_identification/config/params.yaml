@@ -19,6 +19,7 @@ test_node_cpp:
     debug_identification: false
     debug_preprocessing: false
     debug_number_classification: true
+    delay_time: 20
 
 armor_plate_identification_node:
   ros__parameters:
@@ -50,3 +51,4 @@ armor_plate_identification_node:
     debug_identification: false
     debug_preprocessing: false
     debug_number_classification: true
+    delay_time: 0

@@ -1,6 +1,6 @@
 #include "armor_plate_identification/Armor.hpp"
 #include "armor_plate_identification/Detector.hpp"
-#include "armor_plate_identification/TestFunc.hpp"
+#include "armor_plate_identification/DebugIdentifaction.hpp"
 #include "armor_plate_identification/PoseSolver.hpp"
 #include "armor_plate_identification/NumberClassifier.hpp"
 #include "armor_plate_identification/CameraDriver.hpp"
@@ -56,7 +56,6 @@ private:
     rclcpp::Subscription<TrackerDebug>::SharedPtr tracker_debug_sub_;
     std::mutex tracker_debug_mutex_;
     std::deque<ImageSave> images_buffs_;
-
     void init()
     {
         target_color_ = this->declare_parameter<std::string>("target_color", "BLUE");
@@ -121,6 +120,8 @@ private:
         debug_identification_ = this->declare_parameter<bool>("debug_identification", false);
         debug_preprocessing_ = this->declare_parameter<bool>("debug_preprocessing", false);
         debug_number_classification_ = this->declare_parameter<bool>("debug_number_classification", false);
+        int delay_time = this->declare_parameter<int>("delay_time", 0);
+        debug_controller_.setPlayDelayMs(delay_time);
         // 订阅 Tracker 回传的调试数据
         tracker_debug_sub_ = this->create_subscription<TrackerDebug>(
             "tracker_debug", 10,
@@ -261,6 +262,9 @@ private:
     void ImageShow()
     {
         debug_controller_.drawProcessTime(img_show_, process_time_ms_);
+        if (debug_base_) {
+            debug_controller_.drawDelay(img_show_);
+        }
         cv::Mat show_img;
         cv::resize(img_show_, show_img, cv::Size(), 0.5, 0.5);
         cv::imshow("Identifacation", show_img);

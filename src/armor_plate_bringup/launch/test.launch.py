@@ -36,16 +36,16 @@ def generate_launch_description():
         'params.yaml'
     )
 
-    rviz_config_file = os.path.join(
+    foxglove_layout_file = os.path.join(
         get_package_share_directory('armor_plate_bringup'),
-        'rviz2',
-        'rivz2.rviz'
+        'FoxGlove',
+        '装甲板.json'
     )
 
-    use_rviz_arg = DeclareLaunchArgument(
-        'use_rviz',
+    use_foxglove_arg = DeclareLaunchArgument(
+        'use_foxglove',
         default_value='true',
-        description='Whether to start RViz2'
+        description='Whether to start Foxglove Bridge'
     )
 
     # 定义节点
@@ -67,14 +67,6 @@ def generate_launch_description():
         parameters=[tracker_node_params_file]
     )
 
-    visualization_node = Node(
-        package='armor_plate_data_visualization',
-        executable='data_visualization_node',
-        name='data_visualization_node',
-        output='screen',
-        emulate_tty=True
-    )
-
     serial_node = Node(
         package='armor_plate_serial',
         executable='serial_node',
@@ -84,19 +76,22 @@ def generate_launch_description():
         parameters=[serial_node_params_file]
     )
 
-    rviz_node = Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
+    foxglove_bridge_node = Node(
+        package='foxglove_bridge',
+        executable='foxglove_bridge',
+        name='foxglove_bridge',
         output='screen',
-        arguments=['-d', rviz_config_file],
-        condition=IfCondition(LaunchConfiguration('use_rviz'))
+        condition=IfCondition(LaunchConfiguration('use_foxglove')),
+        parameters=[{
+            'port': 8765,
+            'address': '0.0.0.0',
+        }]
     )
 
     return LaunchDescription([
         # 定义参数
         video_path_arg,
-        use_rviz_arg,
+        use_foxglove_arg,
         # 启动节点
-        test_node, tracker_node, visualization_node, serial_node, rviz_node
+        test_node, tracker_node, serial_node, foxglove_bridge_node
     ])

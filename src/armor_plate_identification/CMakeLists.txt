@@ -13,12 +13,12 @@ set(  ArmorPlateIdentifcation
   src/CameraDriver.cpp
   src/PoseSolver.cpp
   src/Detector.cpp
-  src/TestFunc.cpp
+  src/DebugIdentifaction.cpp
   src/NumberClassifier.cpp
 )
 set( Test
   src/Test.cpp
-  src/TestFunc.cpp
+  src/DebugIdentifaction.cpp
   src/PoseSolver.cpp
   src/Detector.cpp
   src/NumberClassifier.cpp

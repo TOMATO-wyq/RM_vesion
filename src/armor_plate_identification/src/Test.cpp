@@ -1,7 +1,7 @@
 // 这个主要是一个测试文件，在没有相机的时候测试
 #include "armor_plate_identification/Armor.hpp"
 #include "armor_plate_identification/Detector.hpp"
-#include "armor_plate_identification/TestFunc.hpp"
+#include "armor_plate_identification/DebugIdentifaction.hpp"
 #include "armor_plate_identification/PoseSolver.hpp"
 #include "armor_plate_identification/NumberClassifier.hpp"
 
@@ -118,6 +118,8 @@ private:
         debug_identification_ = this->declare_parameter<bool>("debug_identification", false);
         debug_preprocessing_ = this->declare_parameter<bool>("debug_preprocessing", false);
         debug_number_classification_ = this->declare_parameter<bool>("debug_number_classification", false);
+        int delay_time = this->declare_parameter<int>("delay_time", 20);
+        debug_controller_.setPlayDelayMs(delay_time);
         // 订阅 Tracker 回传的调试数据
         tracker_debug_sub_ = this->create_subscription<TrackerDebug>(
             "tracker_debug", 10,
@@ -257,6 +259,9 @@ private:
     {
         // 绘制处理用时
         debug_controller_.drawProcessTime(img_show_, process_time_ms_);
+        if (debug_base_) {
+            debug_controller_.drawDelay(img_show_);
+        }
         // 显示图像
         cv::Mat show_img;
         cv::resize(img_show_, show_img, cv::Size(), 0.5, 0.5);

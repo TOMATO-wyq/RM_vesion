@@ -1,0 +1,162 @@
+{
+  "configById": {
+    "3D!18i6zy7": {
+      "layers": {
+        "845139cb-26bc-40b3-8161-8ab60af4baf5": {
+          "visible": true,
+          "frameLocked": true,
+          "label": "Grid",
+          "instanceId": "845139cb-26bc-40b3-8161-8ab60af4baf5",
+          "layerId": "foxglove.Grid",
+          "size": 10,
+          "divisions": 10,
+          "lineWidth": 1,
+          "color": "#248eff",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "order": 1
+        }
+      },
+      "cameraState": {
+        "perspective": true,
+        "distance": 12.604988194489037,
+        "phi": 62.66015582049467,
+        "thetaOffset": 55.56650241605159,
+        "targetOffset": [
+          4.2138372241315984,
+          0.4313070237499045,
+          -3.7887323473808795e-17
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {
+        "/filter_pose": {
+          "visible": false
+        },
+        "/visualization_marker": {
+          "visible": true
+        },
+        "/visualization_marker_array": {
+          "visible": false
+        }
+      },
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "synchronize": false,
+      "imageMode": {},
+      "followTf": "world"
+    },
+    "Plot!84phfo": {
+      "showLegend": false,
+      "paths": [
+        {
+          "timestampMethod": "publishTime",
+          "value": "/tracker_data.measurement_pitch",
+          "enabled": true,
+          "color": "#ffffff",
+          "id": "a79b5a9d-ca15-460a-be52-69484a8704fa",
+          "label": "测量pitch",
+          "showLine": false,
+          "timestampPath": "/tracker_data.header.stamp"
+        },
+        {
+          "timestampMethod": "publishTime",
+          "value": "/tracker_data.filter_pitch",
+          "enabled": true,
+          "color": "#ff00ff",
+          "id": "792a96bb-26f9-43fd-a118-aeb193e57cb6",
+          "showLine": false,
+          "label": "滤波pitch"
+        }
+      ],
+      "xAxisVal": "timestamp",
+      "showPlotValuesInLegend": true,
+      "foxglovePanelTitle": "增量角Pitch",
+      "timeWindowMode": "sliding",
+      "followingViewWidth": 5
+    },
+    "Plot!d578zt": {
+      "showLegend": false,
+      "paths": [
+        {
+          "timestampMethod": "publishTime",
+          "value": "/tracker_data.measurement_yaw",
+          "enabled": true,
+          "color": "#ffffff",
+          "id": "a79b5a9d-ca15-460a-be52-69484a8704fa",
+          "label": "观测yaw",
+          "showLine": false,
+          "timestampPath": "/tracker_data.header.stamp"
+        },
+        {
+          "timestampMethod": "publishTime",
+          "value": "/tracker_data.filter_yaw",
+          "enabled": true,
+          "color": "#ff00ff",
+          "id": "792a96bb-26f9-43fd-a118-aeb193e57cb6",
+          "showLine": false,
+          "label": "滤波yaw",
+          "timestampPath": "/tracker_data.header.stamp"
+        }
+      ],
+      "xAxisVal": "timestamp",
+      "showPlotValuesInLegend": true,
+      "foxglovePanelTitle": "增量角YAW",
+      "showYAxisLabels": true,
+      "timeWindowMode": "sliding",
+      "xAxisLabel": "",
+      "followingViewWidth": 5
+    }
+  },
+  "globalVariables": {
+    "globalVariable": 0
+  },
+  "userNodes": {},
+  "playbackConfig": {
+    "speed": 1
+  },
+  "drawerConfig": {
+    "tracks": []
+  },
+  "layout": {
+    "first": "3D!18i6zy7",
+    "second": {
+      "first": "Plot!84phfo",
+      "second": "Plot!d578zt",
+      "direction": "column"
+    },
+    "direction": "row",
+    "splitPercentage": 61.541461339383844
+  }
+}

@@ -12,9 +12,8 @@
   <exec_depend>mindvision_camera</exec_depend>
   <exec_depend>armor_plate_identification</exec_depend>
   <exec_depend>armor_plate_tracker</exec_depend>
-  <exec_depend>armor_plate_data_visualization</exec_depend>
   <exec_depend>armor_plate_serial</exec_depend>
-  <exec_depend>rviz2</exec_depend>
+  <exec_depend>foxglove_bridge</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

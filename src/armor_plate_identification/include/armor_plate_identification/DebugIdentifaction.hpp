@@ -29,11 +29,14 @@ public:
     ///  @param process_time_ms 图像从获取到处理完成的用时（毫秒），传负数则不显示
     void drawProcessTime(cv::Mat& img, float process_time_ms);
 
-    ///  @brief 在图像左上角绘制 6 个可调参数（从第二行开始）
+    ///  @brief 在 process_time 正下方绘制当前播放延迟
+    void drawDelay(cv::Mat& img);
+
+    ///  @brief 在图像左上角绘制 6 个可调参数（从第三行开始）
     void drawParams(cv::Mat& img, const Detector& lights);
 
-    ///  @brief 在图像上绘制帮助文字与播放延迟
-    ///  @param show_speed_control 是否显示 +/- speed 提示和 Delay 数值
+    ///  @brief 在图像上绘制键盘帮助文字
+    ///  @param show_speed_control 是否显示 +/- speed 提示
     void drawDebugInfo(cv::Mat& img, bool show_speed_control);
 
     ///  @brief 获取当前播放延迟（ms）

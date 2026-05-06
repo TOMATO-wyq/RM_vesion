@@ -1,4 +1,4 @@
-#include "armor_plate_identification/TestFunc.hpp"
+#include "armor_plate_identification/DebugIdentifaction.hpp"
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <algorithm>
@@ -130,9 +130,16 @@ void DebugParamController::drawProcessTime(cv::Mat& img, float process_time_ms)
                 cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 165, 255), 2);
 }
 
+void DebugParamController::drawDelay(cv::Mat& img)
+{
+    std::string delay_text = "Delay: " + std::to_string(play_delay_ms_) + " ms";
+    cv::putText(img, delay_text, cv::Point(x_, y_ + 1 * line_h_),
+                cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 255, 255), 2);
+}
+
 void DebugParamController::drawParams(cv::Mat& img, const Detector& lights)
 {
-    // 下面6行：可调参数，放在第二行之后
+    // 下面6行：可调参数，放在第三行之后
     for (int i = 0; i < 6; ++i) {
         float val = 0.0f;
         switch (i) {
@@ -146,21 +153,18 @@ void DebugParamController::drawParams(cv::Mat& img, const Detector& lights)
         std::string text = param_names_[i] + ": " + std::to_string(val);
         text = text.substr(0, text.find('.') + 3);
         cv::Scalar color = (i == selected_param_) ? cv::Scalar(0, 255, 255) : cv::Scalar(255, 255, 255);
-        cv::putText(img, text, cv::Point(x_, y_ + (i + 1) * line_h_),
+        cv::putText(img, text, cv::Point(x_, y_ + (i + 2) * line_h_),
                     cv::FONT_HERSHEY_SIMPLEX, 0.6, color, 2);
     }
 }
 
 void DebugParamController::drawDebugInfo(cv::Mat& img, bool show_speed_control)
 {
-    int base_row = 7;  // 1 行 process_time + 6 个参数
+    int base_row = 8;  // 1 行 process_time + 1 行 delay + 6 个参数
     if (show_speed_control) {
         cv::putText(img, "1-6:select  T/G:adj  +/-:speed  P:pause  ESC:exit",
                     cv::Point(x_, y_ + base_row * line_h_ + 10),
                     cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
-        std::string speed_text = "Delay: " + std::to_string(play_delay_ms_) + " ms";
-        cv::putText(img, speed_text, cv::Point(x_, y_ + (base_row + 1) * line_h_ + 20),
-                    cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255), 1);
     } else {
         cv::putText(img, "1-6:select  T/G:adj  P:pause  ESC:exit",
                     cv::Point(x_, y_ + base_row * line_h_ + 10),
