@@ -56,7 +56,8 @@ private:
     bool is_lost_;              // 是否处于丢失状态
     // 突变检测阈值（度）
     float yaw_mutation_threshold_;
-    float last_armor_pose_yaw_;
+    float last_armor_pose_yaw_world_;
+    std::string last_armor_number_;
     // 当前帧选中的原始测量值（相机系）
     float measured_yaw_;
     float measured_pitch_;
@@ -75,10 +76,16 @@ private:
     void selectBestMatch(const std::vector<ArmorPlate>& armor_plates, ArmorPlate& target_armor);
     
     // 检查是否突变
-    bool isMutation(const float& armor_pose_yaw);
+    bool isYawMutation(const float& armor_pose_yaw);
     
     // 检查是否丢失太久
     bool isLostTooLong(double current_time) const;
+
+    // 更新测量值相关成员变量
+    void updateMeasurement(const ArmorPlate& armor_plate, double current_time);
+
+    // 更新滤波值相关成员变量（位置+角度）
+    void updateFilteredValue(const Eigen::Vector3d& pc_f, const Eigen::Vector3d& pw_f);
 public:
     // 默认构造函数
     Tracker();
@@ -87,13 +94,13 @@ public:
     void reset();
     
     // 初始化 EKF（检测到第一个目标时调用）
-    void init(const Eigen::Vector3d& target_position, float armor_pose_yaw_world, double current_time);
+    void init(const ArmorPlate& armor_plate, double current_time);
     
     // 设置最大丢失时间（秒）
-    void setMaxLostTime(double seconds);
+    void setMaxLostTime(double seconds) { max_lost_time_ = seconds; }
     
     // 设置突变阈值
-    void setMutationThreshold(float yaw_thresh);
+    void setMutationThreshold(float yaw_thresh) { yaw_mutation_threshold_ = yaw_thresh; }
     
     
     void Update(const std::vector<ArmorPlate>& armor_plates,
@@ -134,3 +141,4 @@ float calculatePoseYaw(const Eigen::Quaterniond &q);
 float calculateYaw(const Eigen::Vector3d& tvec);
 float calculatePitch(const Eigen::Vector3d& tvec);
 float calculateDistance(const Eigen::Vector3d& tvec);
+Eigen::Quaterniond getQuaternionFromYaw(float yaw);

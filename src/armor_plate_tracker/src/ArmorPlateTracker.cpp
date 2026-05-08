@@ -149,23 +149,42 @@ private:
     {
         auto center = tracker_.getCenterPointWorld();
         visualization_msgs::msg::MarkerArray arr;
-        // 旋转轴（黄色竖直线段）
-        Eigen::Vector3d axis_bottom = center - Eigen::Vector3d(0.0, 0.0, 0.5);
-        Eigen::Vector3d axis_top    = center + Eigen::Vector3d(0.0, 0.0, 0.5);
-        arr.markers.push_back(createLineMarker(
-            axis_bottom, axis_top, "world", now, 0,
-            0.02f,
-            1.0f, 1.0f, 0.0f, 1.0f
+        // 旋转轴（绿色中心点 + 向上的绿色箭头)
+        arr.markers.push_back(createSphereMarker(
+            center, "world", now, 0,
+            0.08f,
+            0.0f, 1.0f, 0.0f, 1.0f
         ));
-        // 中心速度箭头（绿色）
+        Eigen::Vector3d axis_top = center + Eigen::Vector3d(0.0, 0.0, 0.5);
+        arr.markers.push_back(createArrowMarker(
+            center, axis_top, "world", now, 1,
+            0.02f, 0.06f, 0.0f,
+            0.0f, 1.0f, 0.0f, 1.0f
+        ));
+        // 中心速度箭头（黄色）
         Eigen::Vector3d velocity = tracker_.getCenterVelocity();
         constexpr double kVelocityScale = 0.5;
         Eigen::Vector3d arrow_end = center + velocity * kVelocityScale;
         arr.markers.push_back(createArrowMarker(
-            center, arrow_end, "world", now, 1,
+            center, arrow_end, "world", now, 2,
             0.02f, 0.06f, 0.0f,
+            1.0f, 1.0f, 0.0f, 1.0f
+        ));
+        // 观测装甲板（红色）
+        arr.markers.push_back(createBoxMarker(
+            tracker_.getMeasuredPositionWorld(),
+            tracker_.getMeasuredOrientationWorld(),
+            "world", now, 3,
+            1.0f, 0.0f, 0.0f, 1.0f
+        ));
+        // 滤波装甲板（绿色）
+        arr.markers.push_back(createBoxMarker(
+            tracker_.getFilterPositionWorld(),
+            tracker_.getFilterOrientationWorld(),
+            "world", now, 4,
             0.0f, 1.0f, 0.0f, 1.0f
         ));
+
         marker_array_pub_->publish(arr);
     }
     void publish(const ArmorPlates::SharedPtr armor_plates)
@@ -188,19 +207,6 @@ private:
             }
         }
 
-        // TF 发布到相机坐标系（逐个装甲板）
-        int armor_plate_count = 0;
-        for (const auto& armor_plate : armor_plates->armor_plates) {
-            geometry_msgs::msg::TransformStamped transfrom_stamped;
-            transfrom_stamped.header.stamp = this->now();
-            transfrom_stamped.header.frame_id = armor_plates->header.frame_id;
-            transfrom_stamped.child_frame_id = "armor_plate_" + std::to_string(++armor_plate_count);
-            transfrom_stamped.transform.translation.x = armor_plate.pose.position.x;
-            transfrom_stamped.transform.translation.y = armor_plate.pose.position.y;
-            transfrom_stamped.transform.translation.z = armor_plate.pose.position.z;
-            transfrom_stamped.transform.rotation = armor_plate.pose.orientation;
-            tf_broadcaster_->sendTransform(transfrom_stamped);
-        }
         // 发布目标位姿 世界坐标系
         Eigen::Vector3d measured_pos_world = tracker_.getMeasuredPositionWorld();
         auto now = this->now();
