@@ -3,7 +3,9 @@
 #include <opencv2/dnn/dnn.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include <algorithm>
 #include <fstream>
+#include <stdexcept>
 
 NumberClassifier::NumberClassifier(
     const std::string& model_path,
@@ -14,16 +16,30 @@ NumberClassifier::NumberClassifier(
 {
     // 加载模型
     net_ = cv::dnn::readNetFromONNX(model_path);
+    if (net_.empty()) {
+        throw std::runtime_error("Failed to load ONNX model: " + model_path);
+    }
     // 加载标签
     std::ifstream label_file(label_path);
+    if (!label_file.is_open()) {
+        throw std::runtime_error("Failed to open label file: " + label_path);
+    }
     std::string line;
     while(std::getline(label_file, line)) {
-        class_names_.push_back(line);
+        if (!line.empty()) {
+            class_names_.push_back(line);
+        }
+    }
+    if (class_names_.empty()) {
+        throw std::runtime_error("Label file is empty: " + label_path);
     }
 }
 
 void NumberClassifier::classify(std::vector<Armor>& armors)
 {
+    if (net_.empty() || class_names_.empty()) {
+        throw std::runtime_error("NumberClassifier is not initialized");
+    }
     // 推理
     for (auto& armor : armors) {
         // 如果号码ROI为空，直接跳过
@@ -39,17 +55,32 @@ void NumberClassifier::classify(std::vector<Armor>& armors)
         net_.setInput(blob);
         // 前向传播
         cv::Mat outputs = net_.forward();
+        if (outputs.empty()) {
+            armor.confidence_ = 0.0;
+            armor.number_.clear();
+            continue;
+        }
         // 取最大值和索引
         float max_prob = *std::max_element(outputs.begin<float>(), outputs.end<float>());
         cv::Mat softmax_prob;
         cv::exp(outputs - max_prob, softmax_prob);
         float sum = static_cast<float>(cv::sum(softmax_prob)[0]);
+        if (sum <= 1e-6f) {
+            armor.confidence_ = 0.0;
+            armor.number_.clear();
+            continue;
+        }
         softmax_prob /= sum;
         // 取最大概率的索引
         double confidence;
         cv::Point class_id_point;
         cv::minMaxLoc(softmax_prob.reshape(1, 1), nullptr, &confidence, nullptr, &class_id_point);
         int label_id = class_id_point.x;
+        if (label_id < 0 || static_cast<size_t>(label_id) >= class_names_.size()) {
+            armor.confidence_ = 0.0;
+            armor.number_.clear();
+            continue;
+        }
         // 填入装甲板信息
         armor.confidence_ = confidence;
         armor.number_ = class_names_[label_id];

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "armor_plate_identification/Armor.hpp"
 #include <opencv2/core/types.hpp>
+#include <string>
 #include <vector>
 
 class Detector

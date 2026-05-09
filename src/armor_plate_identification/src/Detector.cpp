@@ -5,6 +5,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/utils/filesystem.hpp>
+#include <algorithm>
+#include <array>
+#include <cmath>
 ////////////////////// Detector /////////////////////////
 void Detector::init()
 {
@@ -31,7 +34,7 @@ void Detector::detectArmors(cv::Mat& img_thre, const cv::Mat& image)
         armor.number_roi_ = getNumberROI(image, armor);
     }
     // 更新装甲板数量
-    num_lights_ = armors_.size();
+    num_lights_ = static_cast<int>(armors_.size());
 }
 std::vector<std::vector<cv::Point>> Detector::findLightsContours(cv::Mat& img_thre, const cv::Mat& image)
 {
@@ -40,11 +43,12 @@ std::vector<std::vector<cv::Point>> Detector::findLightsContours(cv::Mat& img_th
     cv::findContours(img_thre, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
     // 选出合法的轮廓 --1. 面积不能太小， --2. 长宽比不能太大
     for (const auto& contour : contours) {
-        int area = cv::contourArea(contour);
+        double area = cv::contourArea(contour);
         if (area > MIN_CONTOURS_AREA) {
             cv::RotatedRect min_rect = cv::minAreaRect(cv::Mat(contour));
             double long_length = std::max(min_rect.size.width, min_rect.size.height);
             double short_length = std::min(min_rect.size.width, min_rect.size.height);
+            if (long_length <= 1e-6) continue;
             double ratio =short_length / long_length;
             if (ratio < MAX_CONTOURS_RATIO && ratio > MIN_CONTOURS_RATIO) {
                 // 判断颜色是否符合要求
@@ -151,9 +155,11 @@ bool Detector::checkPairLights(const Lights& light_left, const Lights& light_rig
     double local_y = std::abs(global_x_diff * cosx + global_y_diff * sinx);
     // 再判断x差比率和y差比率和相距距离与灯条长度比值
     double men_length = (light_left.length_ + light_right.length_) / 2.0;
+    double center_distance = cv::norm(light_left.center_ - light_right.center_);
+    if (men_length <= 1e-6 || center_distance <= 1e-6) return false;
     double x_diff_ratio = local_x / men_length;
     double y_diff_ratio = local_y / men_length;
-    double distance_ratio = men_length / cv::norm(light_left.center_ - light_right.center_) ;
+    double distance_ratio = men_length / center_distance;
     if ( x_diff_ratio < MIN_X_DIFF_RATIO || y_diff_ratio > MAX_Y_DIFF_RATIO
         || distance_ratio > MAX_DISTANCE_RATIO || distance_ratio < MIN_DISTANCE_RATIO
     )  return false;
@@ -172,6 +178,7 @@ float Detector::computePairScore(const Lights& light_left, const Lights& light_r
     // 3. 中心距/灯条长度比：越接近2.0（标准装甲板宽高比）越好
     double men_length = (light_left.length_ + light_right.length_) / 2.0;
     double distance = cv::norm(light_left.center_ - light_right.center_);
+    if (men_length <= 1e-6) return 0.0f;
     double dist_ratio = distance / men_length;
     float dist_score = 1.0f - std::min(std::abs((float)dist_ratio - 2.0f), 1.0f);
 
@@ -252,9 +259,8 @@ cv::Mat Detector::getNumberROI(const cv::Mat& image, const Armor& armor)
 }
 void Detector::saveNumberRoi()
 {
-    static int outputPictureCounts = 0;
     for(const auto& armor : armors_) {
-        if (outputPictureCounts < 20 && is_star_save_) {
+        if (outputPictureCounts_ < 20 && is_star_save_ && !armor.number_roi_.empty()) {
         // 确保输出目录存在
             if (!cv::utils::fs::createDirectories(outputPath_)) {
                 RCLCPP_WARN_ONCE(rclcpp::get_logger("Detector"),
@@ -267,10 +273,11 @@ void Detector::saveNumberRoi()
             }
             RCLCPP_INFO(rclcpp::get_logger("Detector"), "保存成功");
         }
-        if (outputPictureCounts >= 20 && is_star_save_) {
-            outputPictureCounts = 0;
+        if (outputPictureCounts_ >= 20 && is_star_save_) {
+            outputPictureCounts_ = 0;
             is_star_save_ = false;
             RCLCPP_INFO(rclcpp::get_logger("Detector"), "阶段性保存结束");
+            break;
         }
     }
 }
@@ -295,6 +302,7 @@ void Detector::showNumberBinaryROI()
             valid_rois.push_back(armor.number_roi_);
         }
     }
+    if (valid_rois.empty()) return;
     cv::Mat concat_img;
     cv::hconcat(valid_rois, concat_img);
     cv::imshow("Number ROIs", concat_img);

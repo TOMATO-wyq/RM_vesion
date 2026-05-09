@@ -3,6 +3,9 @@
 
 #include <opencv2/dnn.hpp>
 
+#include <string>
+#include <vector>
+
 class NumberClassifier
 {
 private:
